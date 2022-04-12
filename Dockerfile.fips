@@ -1,0 +1,29 @@
+# This Dockerfile contains multiple targets.
+# Use 'docker build --target=<name> -f Dockerfile.fips .' to build one.
+# e.g. `docker build --target=gh -f Dockerfile.fips .`
+
+
+# Then run the image and use docker cp to copy the build artifacts out.
+# e.g.
+# docker build -t hashifips -f Dockerfile.fips --target=local .
+# docker run --rm -it --name hashifips hashifips bash
+# docker cp hashifips:/go/bin/consul consul
+#
+# You can check that FIPS is enabled by starting consul agent and fetching
+# /X_FIPS
+#
+# From the Go borigncrypto README.md:
+#   To check whether a given binary is using BoringCrypto, run `go tool nm` on it and check
+#   that it has symbols named `*_Cfunc__goboringcrypto_*`.
+
+FROM us-docker.pkg.dev/google.com/api-project-999119582588/go-boringcrypto/golang:1.17.5b7 as local
+ADD . consul
+RUN cd consul &&\
+    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go install
+
+FROM us-docker.pkg.dev/google.com/api-project-999119582588/go-boringcrypto/golang:1.17.5b7 as gh
+
+RUN git clone https://github.com/jrwren/consul.git &&\
+    cd consul &&\
+    git checkout v1.11.4-fips &&\
+    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go install

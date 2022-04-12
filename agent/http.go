@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"crypto/boring"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -281,6 +282,9 @@ func (s *HTTPHandlers) handler(enableDebug bool) http.Handler {
 	handlePProf("/debug/pprof/profile", pprof.Profile)
 	handlePProf("/debug/pprof/symbol", pprof.Symbol)
 	handlePProf("/debug/pprof/trace", pprof.Trace)
+	mux.HandleFunc("/X_FIPS", func(w http.ResponseWriter, r *http.Request){
+		fmt.Fprintf(w, "%v\n", boring.Enabled())
+	})
 
 	if s.IsUIEnabled() {
 		// Note that we _don't_ support reloading ui_config.{enabled, content_dir,

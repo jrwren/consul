@@ -3,6 +3,7 @@ package agent
 import (
 	"context"
 	"crypto/tls"
+	_ "crypto/tls/fipsonly"
 	"encoding/json"
 	"fmt"
 	"io"
